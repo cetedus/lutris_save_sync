@@ -29,11 +29,15 @@ The first line in the file "lutris_save_sync.config" (CLOUD_MAIN_BACKUP_DIR) sho
 Following lines contain per-game path part where the saves are being kept. I know that PCGamingWiki contains some paths for steam, but I am using GOG and have found no such list for those so you need to update the file for your games. Feel free to create a PR (or send me a message) with updated list of tested-and-working additional paths.
 
 Each lines' key name should be built like this 
-[uppercase_service_name]_[slug]_SAVEGAMES
+[uppercase_service_name]_[uppercase_platform_name]_[slug]_SAVEGAMES
 where:
 * uppercase_service_name - can be GOG , HUMBLEBUNDLE etc.
+* uppercase_platform_name - can be LINUX , WINDOWS
 * slug - is the name of the game in the lutris db, the slug is usually visible in its install path , all lower case, spaces are replaced with dashes , e.g. hard-reset-redux 
 The path stored in the key should be inside double quotes and should begin and end with a slash!
+The path for LINUX platform must be absolute, only replace your user_name with WHOAMI_OUTPUT 
+The path for WINDOWS platform must be relative to the folder where the game has been installed, only replace your user_name with WHOAMI_OUTPUT
+
 
 ## Lutris configuration
 Be sure to first make the script executable 

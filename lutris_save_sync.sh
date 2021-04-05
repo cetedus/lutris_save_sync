@@ -218,6 +218,18 @@ get_service_name_from_lutris_db()
     echo "${game_service_from_db}"
 }
 
+get_platform_name_from_lutris_db()
+{
+    game_platform_from_db=$(sqlite3 ${lutris_db_path} "SELECT platform FROM games WHERE installed=1 AND name=\"${game_name_from_env}\"" 2>&1)
+    if [ "$(echo ${game_platform_from_db}|wc -l)" != "1" ]
+    then
+        logger "ERROR" "Expected one row with game platform, instead got: "
+        logger "ERROR" "${game_platform_from_db}"
+        exit
+    fi
+    logger "DEBUG" "game_platform_from_db: ${game_platform_from_db}"
+    echo "${game_platform_from_db}"
+}
 
 
 ###BODY
@@ -232,22 +244,40 @@ game_name_from_env="$(printenv game_name)"
 logger "DEBUG" "Game name found in environment variable game_name: \"${game_name_from_env}\""
 
 game_install_path="$(get_game_install_path_from_lutris_db)"
+
 game_service="$(get_service_name_from_lutris_db)"
 game_service_uppercase=$(echo $(get_service_name_from_lutris_db)|tr "[a-z]" "[A-Z]")
 
 game_name="$(get_game_name_from_lutris_db)"
 
-game_savegames_path_part_in_config="$(get_value_of_key_from_config ${game_service_uppercase}_${game_name}_SAVEGAMES)"
+game_platform="$(get_platform_name_from_lutris_db)"
+game_platform_uppercase=$(echo $(get_platform_name_from_lutris_db)|tr "[a-z]" "[A-Z]")
+
+game_savegames_path_part_in_config="$(get_value_of_key_from_config ${game_service_uppercase}_${game_platform_uppercase}_${game_name}_SAVEGAMES)"
 
 if [ "${game_savegames_path_part_in_config}" = "KEY_NOT_FOUND" ]
 then
-    logger "ERROR" "No savegame path found in config file for game ${game_name} installed from service ${game_service_uppercase}. Exiting."
-    notify "ERROR - $(basename ${0})" "No savegame path found in config file for game ${game_name} installed from service ${game_service_uppercase}. Exiting."
+    logger "ERROR" "No savegame path found in config file for game ${game_name} installed from service ${game_service_uppercase} for platform ${game_platform_uppercase}. Exiting."
+    notify "ERROR - $(basename ${0})" "No savegame path found in config file for game ${game_name} installed from service ${game_service_uppercase} for platform ${game_platform_uppercase}. Exiting."
     exit 5
 fi
 
-local_savegame_dir="${game_install_path}/${game_savegames_path_part_in_config}/"
-local_savegame_dir="$(echo ${local_savegame_dir}|sed 's|\/\/|\/|g')"
+if [ "${game_platform_uppercase}" = "WINDOWS" ]
+then
+    local_savegame_dir="${game_install_path}/${game_savegames_path_part_in_config}/"
+    local_savegame_dir="$(echo ${local_savegame_dir}|sed 's|\/\/|\/|g')"
+ else
+    if [ "${game_platform_uppercase}" = "LINUX" ]
+    then
+        local_savegame_dir="/${game_savegames_path_part_in_config}/"
+        local_savegame_dir="$(echo ${local_savegame_dir}|sed 's|\/\/|\/|g')"
+    else
+        logger "ERROR" "Platform can be either \"WINDOWS\" or \"LINUX\" . For game ${game_name} from service ${game_service_uppercase} found platform: ${game_platform_uppercase}. Exiting."
+        notify "ERROR - $(basename ${0})" "Platform can be either \"WINDOWS\" or \"LINUX\" . For game ${game_name} from service ${game_service_uppercase} found platform: ${game_platform_uppercase}. Exiting."
+        exit 5
+    fi
+fi
+
 logger "DEBUG" "Local savegame dir is: ${local_savegame_dir}"
 
 cloud_main_backup_dir="$(get_value_of_key_from_config CLOUD_MAIN_BACKUP_DIR)"
