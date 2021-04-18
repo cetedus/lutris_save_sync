@@ -15,7 +15,8 @@ then
 fi
 
 ###CONFIG
-debug_log="true"
+debug_log="false"
+dump_env_vars_to_log="true"
 date_format="+%Y-%m-%d %H:%M:%S"
 script_home="$(dirname ${0})"
 lutris_db_path="/home/$(whoami)/.local/share/lutris/pga.db"
@@ -46,6 +47,11 @@ init()
         fi
         init_counter=$(( init_counter + 1 ))
     done
+    if [ "${dump_env_vars_to_log}" = true ]
+    then
+        env_var_dump="$(printenv)"
+        logger "DEBUG" "Env variables: ${env_var_dump}"
+    fi
 }
 
 #args
@@ -159,7 +165,13 @@ get_value_of_key_from_config()
     value_for_key=$(grep -Po "(?<=^${1}\=).*$" "${config_file_location}")
     if [ "$(echo ${value_for_key}|wc -m)" -gt "1" ]
     then
-        whoami_output="$(whoami)"
+        #proton wine uses "steamuser" dir instead of your local user dir so we need to adjust paths accordingly
+        if [ "$(are_we_running_proton)" = "WE_ARE_RUNNING_PROTON" ]
+        then
+            whoami_output="steamuser"
+        else
+            whoami_output="$(whoami)"
+        fi
         echo ${value_for_key}|sed s/WHOAMI_OUTPUT/${whoami_output}/g|sed s/\"//g
     else
         echo "KEY_NOT_FOUND"
@@ -231,6 +243,20 @@ get_platform_name_from_lutris_db()
     echo "${game_platform_from_db}"
 }
 
+are_we_running_proton()
+{
+    wine_env_value="$(printenv WINE)"
+    echo "${wine_env_value}"|grep -iq "proton" 
+    proton_check_result="${?}"
+    if [ "${proton_check_result}" = "0" ]
+    then
+        logger "INFO" "Proton wine detected based on wine path."
+        echo "WE_ARE_RUNNING_PROTON"
+    else
+        logger "INFO" "No proton wine detected based on wine path."
+        echo "WE_ARE_NOT_RUNNING_PROTON"
+    fi
+}
 
 ###BODY
 
@@ -238,10 +264,10 @@ init
 
 action_to_perform="${1}"
 
-logger "DEBUG" "Parameter passed to script: ${action_to_perform}"
+logger "INFO" "Parameter passed to script: ${action_to_perform}"
 
 game_name_from_env="$(printenv game_name)"
-logger "DEBUG" "Game name found in environment variable game_name: \"${game_name_from_env}\""
+logger "INFO" "Game name found in environment variable game_name: \"${game_name_from_env}\""
 
 game_install_path="$(get_game_install_path_from_lutris_db)"
 
