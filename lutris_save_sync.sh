@@ -273,6 +273,10 @@ game_install_path="$(get_game_install_path_from_lutris_db)"
 
 game_service="$(get_service_name_from_lutris_db)"
 game_service_uppercase=$(echo $(get_service_name_from_lutris_db)|tr "[a-z]" "[A-Z]")
+if [ -z "${game_service_uppercase}" ]
+then
+    game_service_uppercase="NOSERVICE"
+fi
 
 game_name="$(get_game_name_from_lutris_db)"
 
@@ -315,7 +319,12 @@ then
     exit 5
 fi
 
-cloud_savegame_dir="${cloud_main_backup_dir}/${game_service}/${game_name}/"
+if [ -z "${game_service}" ]
+then
+    cloud_savegame_dir="${cloud_main_backup_dir}/${game_name}/"
+else
+    cloud_savegame_dir="${cloud_main_backup_dir}/${game_service}/${game_name}/"
+fi
 cloud_savegame_dir="$(echo ${cloud_savegame_dir}|sed 's|\/\/|\/|g')"
 logger "DEBUG" "Cloud savegame dir is: ${cloud_savegame_dir}"
 
