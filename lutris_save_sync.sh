@@ -336,7 +336,7 @@ then
         then
             mkdir -p "${cloud_savegame_dir}"
         fi
-        rsync -avcr "${local_savegame_dir}" "${cloud_savegame_dir}" >>"${log_path}" 2>&1
+        rsync -avcr --delete --ignore-existing "${local_savegame_dir}" "${cloud_savegame_dir}" >>"${log_path}" 2>&1
         if [ "${?}" = "0" ]
         then
             logger "INFO" "Rsync backup of saves of the game ${game_name} to the cloud has succeeded."
