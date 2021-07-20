@@ -292,6 +292,18 @@ then
     exit 5
 fi
 
+echo "${game_savegames_path_part_in_config}"|grep -Pq "/$"
+if [ "${?}" = "0" ]
+then
+    backup_is_directory=1
+    logger "DEBUG" "Backup is a directory, game_savegames_path_part_in_config set to \"${game_savegames_path_part_in_config}\""
+else
+    backup_is_directory=0
+    file_to_backup=$(echo "${game_savegames_path_part_in_config}" |grep -Po "(?<=/)[a-zA-Z0-9\-_\.]{1,}$")
+    game_savegames_path_part_in_config=$(echo "${game_savegames_path_part_in_config}" |grep -Po "^.*/")
+    logger "DEBUG" "Backup is a single file, game_savegames_path_part_in_config set to \"${game_savegames_path_part_in_config}\" and file_to_backup set to \"${file_to_backup}\""
+fi
+
 if [ "${game_platform_uppercase}" = "WINDOWS" ]
 then
     local_savegame_dir="${game_install_path}/${game_savegames_path_part_in_config}/"
@@ -336,7 +348,12 @@ then
         then
             mkdir -p "${cloud_savegame_dir}"
         fi
-        rsync -avcr --delete --ignore-existing "${local_savegame_dir}" "${cloud_savegame_dir}" >>"${log_path}" 2>&1
+        if [ "${backup_is_directory}" = 1 ]
+        then
+            rsync -avcr --delete --ignore-existing "${local_savegame_dir}" "${cloud_savegame_dir}" >>"${log_path}" 2>&1
+        else
+            rsync -avcr --delete --ignore-existing "${local_savegame_dir}/${file_to_backup}" "${cloud_savegame_dir}" >>"${log_path}" 2>&1
+        fi
         if [ "${?}" = "0" ]
         then
             logger "INFO" "Rsync backup of saves of the game ${game_name} to the cloud has succeeded."
@@ -360,7 +377,12 @@ then
         then
             mkdir -p "${local_savegame_dir}"
         fi
-        rsync -avcr "${cloud_savegame_dir}" "${local_savegame_dir}" >>"${log_path}" 2>&1
+        if [ "${backup_is_directory}" = 1 ]
+        then
+            rsync -avcr "${cloud_savegame_dir}" "${local_savegame_dir}" >>"${log_path}" 2>&1
+        else
+            rsync -avcr "${cloud_savegame_dir}/${file_to_backup}" "${local_savegame_dir}" >>"${log_path}" 2>&1
+        fi
         if [ "${?}" = "0" ]
         then
             logger "INFO" "Rsync restore of saves of the game ${game_name} from the cloud has succeeded."
