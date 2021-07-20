@@ -350,9 +350,9 @@ then
         fi
         if [ "${backup_is_directory}" = 1 ]
         then
-            rsync -avcr --delete --ignore-existing "${local_savegame_dir}" "${cloud_savegame_dir}" >>"${log_path}" 2>&1
+            rsync -avcr --delete "${local_savegame_dir}" "${cloud_savegame_dir}" >>"${log_path}" 2>&1
         else
-            rsync -avcr --delete --ignore-existing "${local_savegame_dir}/${file_to_backup}" "${cloud_savegame_dir}" >>"${log_path}" 2>&1
+            rsync -avcr --delete "${local_savegame_dir}/${file_to_backup}" "${cloud_savegame_dir}" >>"${log_path}" 2>&1
         fi
         if [ "${?}" = "0" ]
         then
