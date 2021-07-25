@@ -397,3 +397,23 @@ then
     fi
 fi
 
+if [ ! -z "${2}" ]
+then
+    script_type=$(grep -Po "(?<=\.)[a-z]{1,}$" <<<"${2}")
+    case ${script_type} in
+	sh)
+        logger "INFO" "Launching shell script ${2}"
+        notify "INFO" "Launching shell script ${2}"
+		/usr/bin/env bash "${2}"
+		;;
+	py)
+		logger "INFO" "Launching python script ${2}"
+        notify "INFO" "Launching python script ${2}"
+		/usr/bin/env python "${2}"
+		;;
+	*)
+		logger "WARNING" "Unrecognized script extension ${script_type} ."
+        notify "WARNING" "Unrecognized script extension ${script_type} ."
+		;;
+    esac
+fi
