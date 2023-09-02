@@ -193,7 +193,7 @@ notify()
 
 get_game_install_path_from_lutris_db()
 {
-    game_path_from_db=$(sqlite3 ${lutris_db_path} "SELECT directory FROM games WHERE installed=1 AND name=\"${game_name_from_env}\"" 2>&1)
+    game_path_from_db=$(sqlite3 ${lutris_db_path} "SELECT directory FROM games WHERE installed=1 AND name='${game_name_from_env}'" 2>&1)
     if [ "$(echo ${game_path_from_db}|wc -l)" != "1" ]
     then
         logger "ERROR" "Expected one row with game path, instead got: "
@@ -206,7 +206,7 @@ get_game_install_path_from_lutris_db()
 
 get_game_name_from_lutris_db()
 {
-    game_name_from_db=$(sqlite3 ${lutris_db_path} "SELECT slug FROM games WHERE installed=1 AND name=\"${game_name_from_env}\"" 2>&1)
+    game_name_from_db=$(sqlite3 ${lutris_db_path} "SELECT slug FROM games WHERE installed=1 AND name='${game_name_from_env}'" 2>&1)
     if [ "$(echo ${game_name_from_db}|wc -l)" != "1" ]
     then
         logger "ERROR" "Expected one row with game name, instead got: "
@@ -219,7 +219,7 @@ get_game_name_from_lutris_db()
 
 get_service_name_from_lutris_db()
 {
-    game_service_from_db=$(sqlite3 ${lutris_db_path} "SELECT service FROM games WHERE installed=1 AND name=\"${game_name_from_env}\"" 2>&1)
+    game_service_from_db=$(sqlite3 ${lutris_db_path} "SELECT service FROM games WHERE installed=1 AND name='${game_name_from_env}'" 2>&1)
     if [ "$(echo ${game_service_from_db}|wc -l)" != "1" ]
     then
         logger "ERROR" "Expected one row with game name, instead got: "
@@ -232,7 +232,7 @@ get_service_name_from_lutris_db()
 
 get_platform_name_from_lutris_db()
 {
-    game_platform_from_db=$(sqlite3 ${lutris_db_path} "SELECT platform FROM games WHERE installed=1 AND name=\"${game_name_from_env}\"" 2>&1)
+    game_platform_from_db=$(sqlite3 ${lutris_db_path} "SELECT platform FROM games WHERE installed=1 AND name='${game_name_from_env}'" 2>&1)
     if [ "$(echo ${game_platform_from_db}|wc -l)" != "1" ]
     then
         logger "ERROR" "Expected one row with game platform, instead got: "
